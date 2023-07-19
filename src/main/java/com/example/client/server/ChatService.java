@@ -1,13 +1,12 @@
 package com.example.client.server;
 
 import com.example.client.controller.param.ChatSendMsgParam;
-import com.example.server.gen.proto.ChatServiceGrpc;
-import com.example.server.gen.proto.Code;
-import com.example.server.gen.proto.SendMessageReply;
-import com.example.server.gen.proto.SendMessageRequest;
+import com.example.server.gen.proto.*;
 import io.micrometer.common.util.StringUtils;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
+
+import java.util.Iterator;
 
 
 @Service
@@ -34,7 +33,7 @@ public class ChatService {
                 .setToUserId(chatSendMsgParam.getToUserId())
                 .setToUserName(toUserName)
                 .setText(chatSendMsgParam.getText()).build();
-        SendMessageReply sendMessageReply = chatServiceBlockingStub.sendMessageToSomeOne(request);
+        SendMessageReply sendMessageReply = chatServiceBlockingStub.sendMessageToSomeone(request);
         if(Code.SUCCESS.getNumber() == sendMessageReply.getCodeValue()){
             return fromUserName + "向" + toUserName + "成功发送了消息，消息为：" + chatSendMsgParam.getText() ;
         }
@@ -47,6 +46,40 @@ public class ChatService {
         // 校验参数   用id代替代替登陆信息
         if(chatSendMsgParam.getFromUserId() <= 0 || chatSendMsgParam.getToUserId() <= 0
                 || StringUtils.isEmpty(chatSendMsgParam.getText())){
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean getConnection(Long userId) {
+        ConnectionRequest.Builder request = ConnectionRequest.newBuilder().setUserId(userId);
+        Iterator<ConnectionReply> connection = chatServiceBlockingStub.getConnection(request.build());
+        if(connection.hasNext() && Boolean.TRUE.toString().equals(connection.next().getText())){
+            mockClientReceiveMessage(userId, connection);
+            return true;
+        }
+        return false;
+    }
+
+    private void mockClientReceiveMessage(Long userId, Iterator<ConnectionReply> connection) {
+        // 开启新线程 模拟随时接收用户发来的消息
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (connection.hasNext()){
+                    ConnectionReply next = connection.next();
+                    System.out.println(Thread.currentThread().getName() + "收到了用户" + next.getFormUserId() + "发送的消息" + next.getText());
+                }
+            }
+        });
+        thread.setName("用户" + userId + "的链接" );
+        thread.start();
+    }
+
+    public Boolean giveUpConnection(Long userId) {
+        ConnectionRequest.Builder request = ConnectionRequest.newBuilder().setUserId(userId);
+        GiveUpConnectionReply giveUpConnectionReply = chatServiceBlockingStub.giveUpConnection(request.build());
+        if(giveUpConnectionReply.getResult()){
             return true;
         }
         return false;
