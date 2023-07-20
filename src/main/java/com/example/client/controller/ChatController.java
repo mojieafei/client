@@ -2,6 +2,7 @@ package com.example.client.controller;
 
 
 import com.example.client.controller.param.ChatSendMsgParam;
+import com.example.client.controller.param.VersatileMessageParam;
 import com.example.client.server.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,11 @@ public class ChatController {
      public String sendMsgToSomeOne(@RequestBody ChatSendMsgParam chatSendMsgParam){
          return chatService.sendMsgToSomeOne(chatSendMsgParam);
      }
+
+    @PostMapping("/sendVersatileMessageToSomeone")
+    public Boolean sendVersatileMessageToSomeone(@RequestBody VersatileMessageParam versatileMessageParam){
+        return chatService.sendVersatileMessageToSomeone(versatileMessageParam);
+    }
 
 
     @GetMapping("/getConnection")

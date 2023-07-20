@@ -1,6 +1,7 @@
 package com.example.client.server;
 
 import com.example.client.controller.param.ChatSendMsgParam;
+import com.example.client.controller.param.VersatileMessageParam;
 import com.example.server.gen.proto.*;
 import io.micrometer.common.util.StringUtils;
 import net.devh.boot.grpc.client.inject.GrpcClient;
@@ -79,9 +80,14 @@ public class ChatService {
     public Boolean giveUpConnection(Long userId) {
         ConnectionRequest.Builder request = ConnectionRequest.newBuilder().setUserId(userId);
         GiveUpConnectionReply giveUpConnectionReply = chatServiceBlockingStub.giveUpConnection(request.build());
-        if(giveUpConnectionReply.getResult()){
-            return true;
-        }
-        return false;
+        return giveUpConnectionReply.getResult();
+    }
+
+    public Boolean sendVersatileMessageToSomeone(VersatileMessageParam versatileMessageParam) {
+        VersatileMessageRequest.Builder builder = VersatileMessageRequest.newBuilder().setFormUserId(versatileMessageParam.getFromUserId())
+                .setToUserId(versatileMessageParam.getToUserId()).setMessageId(versatileMessageParam.getMessageId())
+                .setType(OperationType.valueOf(versatileMessageParam.getOperationType())).setExt(versatileMessageParam.getExt());
+        VersatileMessageReply versatileMessageReply = chatServiceBlockingStub.sendVersatileMessageToSomeone(builder.build());
+        return versatileMessageReply.getResult();
     }
 }
