@@ -84,9 +84,14 @@ public class ChatService {
     }
 
     public Boolean sendVersatileMessageToSomeone(VersatileMessageParam versatileMessageParam) {
+        // 这里需要通过持久化的message获取 fromUserId 和 toUserId 信息
+        Long fromUserId = 0L;
+        Long toUserId = 0L;
+        VersatileMessage.Builder versatileMessage = VersatileMessage.newBuilder().setMessageId(versatileMessageParam.getMessageId())
+                .setFormUserId(fromUserId).setToUserId(toUserId).setType(OperationType.valueOf(versatileMessageParam.getOperationType()))
+                .setExt(versatileMessageParam.getExt());
         VersatileMessageRequest.Builder builder = VersatileMessageRequest.newBuilder().setFormUserId(versatileMessageParam.getFromUserId())
-                .setToUserId(versatileMessageParam.getToUserId()).setMessageId(versatileMessageParam.getMessageId())
-                .setType(OperationType.valueOf(versatileMessageParam.getOperationType())).setExt(versatileMessageParam.getExt());
+                .setToUserId(versatileMessageParam.getToUserId()).setVersatileMessage(versatileMessage);
         VersatileMessageReply versatileMessageReply = chatServiceBlockingStub.sendVersatileMessageToSomeone(builder.build());
         return versatileMessageReply.getResult();
     }
