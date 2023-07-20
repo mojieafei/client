@@ -69,7 +69,8 @@ public class ChatService {
             public void run() {
                 while (connection.hasNext()){
                     ConnectionReply next = connection.next();
-                    System.out.println(Thread.currentThread().getName() + "收到了用户" + next.getFormUserId() + "发送的消息" + next.getText());
+                    System.out.println(Thread.currentThread().getName() + "收到了用户" + next.getFormUserId() + "发送的消息" + next.getText() + "消息id ：" + next.getMessageId());
+                    System.out.println("消息体为：" + next.getVersatileMessage());
                 }
             }
         });
@@ -84,11 +85,8 @@ public class ChatService {
     }
 
     public Boolean sendVersatileMessageToSomeone(VersatileMessageParam versatileMessageParam) {
-        // 这里需要通过持久化的message获取 fromUserId 和 toUserId 信息
-        Long fromUserId = 0L;
-        Long toUserId = 0L;
         VersatileMessage.Builder versatileMessage = VersatileMessage.newBuilder().setMessageId(versatileMessageParam.getMessageId())
-                .setFormUserId(fromUserId).setToUserId(toUserId).setType(OperationType.valueOf(versatileMessageParam.getOperationType()))
+                .setType(OperationType.valueOf(versatileMessageParam.getOperationType()))
                 .setExt(versatileMessageParam.getExt());
         VersatileMessageRequest.Builder builder = VersatileMessageRequest.newBuilder().setFormUserId(versatileMessageParam.getFromUserId())
                 .setToUserId(versatileMessageParam.getToUserId()).setVersatileMessage(versatileMessage);
